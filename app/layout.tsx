@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Outfit } from "next/font/google";
+import Header from "@/components/shared/header";
+import Footer from "@/components/shared/footer";
 
 
 const outfit = Outfit({ subsets: ["latin"] });
@@ -26,7 +28,10 @@ export default function RootLayout({
           enableSystem={false}   
           disableTransitionOnChange
         >
+        <Header/>
           {children}
+        <Footer/>
+
         </ThemeProvider>
       </body>
     </html>
