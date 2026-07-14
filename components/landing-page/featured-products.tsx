@@ -3,36 +3,38 @@ import Link from "next/link";
 import { ArrowUpRightIcon, StarIcon } from "lucide-react";
 import SectionHeader from '@/components/shared/section-header'
 import ProductCard from '../products/product-card';
+import { getFeaturedProducts } from '@/lib/products/product-selection';
 
 
-const featuredProducts = [
-  {
-    id: 1,
-    name: "ParityKit",
-    description: "A toolkit for creating parity products",
-    tags: ["SaaS", "Pricing", "Global"],
-    votes: 615,
-    isFeatured: true,
-  },
-  {
-    id: 2,
-    name: "Modern Full Stack Next.js Course",
-    description: "Learn to build production-ready full stack apps with Next.js",
-    tags: ["Next.js", "Full-Stack", "Course"],
-    votes: 124,
-    isFeatured: false,
-  },
-  {
-    id: 3,
-    name: "Habit Tracker",
-    description: "production-ready full stack apps with Next.js",
-    tags: ["Next.js", "Full-Stack"],
-    votes: 101,
-    isFeatured: true,
-  },
-];
+// const featuredProducts = [
+//   {
+//     id: 1,
+//     name: "ParityKit",
+//     description: "A toolkit for creating parity products",
+//     tags: ["SaaS", "Pricing", "Global"],
+//     votes: 615,
+//     isFeatured: true,
+//   },
+//   {
+//     id: 2,
+//     name: "Modern Full Stack Next.js Course",
+//     description: "Learn to build production-ready full stack apps with Next.js",
+//     tags: ["Next.js", "Full-Stack", "Course"],
+//     votes: 124,
+//     isFeatured: false,
+//   },
+//   {
+//     id: 3,
+//     name: "Habit Tracker",
+//     description: "production-ready full stack apps with Next.js",
+//     tags: ["Next.js", "Full-Stack"],
+//     votes: 101,
+//     isFeatured: true,
+//   },
+// ];
 
-function FeaturedProducts(){ 
+async function FeaturedProducts(){
+  const featProducts = await getFeaturedProducts();
   return ( 
      <section className="py-20">
       <div className="wrapper">
@@ -51,7 +53,7 @@ function FeaturedProducts(){
           </Button>
           </div>
           <div className="grid-wrapper">
-          {featuredProducts.map((product) => (
+          {featProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
