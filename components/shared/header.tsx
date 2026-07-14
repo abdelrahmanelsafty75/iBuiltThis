@@ -52,9 +52,11 @@ export default function Header() {
 
           <div className="flex items-center gap-3">
             <Show when="signed-out">
-              <SignInButton />
+              <SignInButton>
+                <Button variant="ghost" className="hover:cursor-pointer">Sign In</Button>
+              </SignInButton>
               <SignUpButton>
-                <Button>Sign Up</Button>
+                <Button className="hover:cursor-pointer">Sign Up</Button>
               </SignUpButton>
             </Show>
 
