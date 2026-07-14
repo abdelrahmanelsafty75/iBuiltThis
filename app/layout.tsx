@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Outfit } from "next/font/google";
 import Header from "@/components/shared/header";
 import Footer from "@/components/shared/footer";
+import { ClerkProvider } from "@clerk/nextjs";
 
 
 const outfit = Outfit({ subsets: ["latin"] });
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className={`${outfit.className} antialiased`}>
+        <ClerkProvider>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"    
@@ -33,6 +35,7 @@ export default function RootLayout({
         <Footer/>
 
         </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   )
