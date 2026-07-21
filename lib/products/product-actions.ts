@@ -74,13 +74,16 @@ export const addProductAction = async (prevState: FormState, formData: FormData)
      } catch (error) {
     console.error(error);
 
-    // if (error instanceof z.ZodError) {
-    //   return {
-    //     success: false,
-    //     errors: error.flatten().fieldErrors,
-    //     message: "Validation failed. Please check the form.",
-    //   };
-    // }
+    const dbError = (error as { cause?: { code?: string } })?.cause;
+    const isUniqueConstraintViolation = dbError?.code === "23505";
+
+    if (isUniqueConstraintViolation) {
+      return {
+        success: false,
+        errors: { slug: ["A product with this slug already exists. Please choose a different one."] },
+        message: "A product with this slug already exists.",
+      };
+    }
 
     return {
       success: false,
