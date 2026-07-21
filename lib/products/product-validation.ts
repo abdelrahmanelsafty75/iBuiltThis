@@ -21,7 +21,7 @@ export const productSchema = z.object({
 
   description: z.string().optional(),
 
-  websiteUrl: z.string().min(1, { message: "Website URL is required" }),
+  websiteUrl: z.string().url({ message: "Website URL must be a valid URL" }).min(1, { message: "Website URL is required" }),
   
   tags: z
     .string()

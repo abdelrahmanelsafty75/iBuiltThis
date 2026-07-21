@@ -10,9 +10,9 @@ import { Button } from "../ui/button";
 import { 
   SignInButton,
   SignUpButton,
-  UserButton,
   Show 
 } from "@clerk/nextjs";
+import CustomUserButton from "./custom-user-button";
 
 const Logo = () => {
   return (
@@ -68,7 +68,7 @@ export default function Header() {
                 <SparklesIcon className="size-4" />
                 Submit Project
               </Button>
-              <UserButton />
+              <CustomUserButton />
             </Show>
           </div>
         </div>

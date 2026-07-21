@@ -4,25 +4,28 @@ import {auth, currentUser} from "@clerk/nextjs/server"
 import { productSchema } from "./product-validation";
 import { products } from "@/db/schema";
 import { db } from "@/db";
-import z from "zod";
+//import z from "zod";
+import { FormState } from "@/types";
 
-type formState = {
-    success: boolean;
-    error?: Record<string, string>;
-    message: string;
-}
 
-export const addProductAction = async (prevState: formState, formData: FormData) => {
+export const addProductAction = async (prevState: FormState, formData: FormData) => {
     console.log(formData);
 
     try {
-        const userId = await auth();
+        const {userId, orgId} = await auth();
         if (!userId) {
             return {
                 success: false,
                 message: "you must be signed in to submit a product.",
             }
         }
+
+        if (!orgId) {
+             return {
+               success: false,
+               message: "You must be a member of an organization to submit a product",
+            };
+         }
 
     // Extract form data
     const rawFormData = Object.fromEntries(formData.entries());
@@ -35,7 +38,7 @@ export const addProductAction = async (prevState: formState, formData: FormData)
 
         return {
             success: false,
-            error: validatedData.error.flatten().fieldErrors,
+            errors: validatedData.error.flatten().fieldErrors,
             message: "Invalid data.",
         };
     }
@@ -57,33 +60,32 @@ export const addProductAction = async (prevState: formState, formData: FormData)
         tags: tagsArray,
         status: "pending",
         submittedBy: emailAddress,
-        userId: "",
+         organizationId: orgId,
+        userId,
     });
 
     return {
         success: true,
         message: "Product submitted successfully, it will be reviewed shortly.",
+        errors: {},
     };
     
 
      } catch (error) {
-        console.error(error);
+    console.error(error);
 
-        if(error instanceof z.ZodError) {
-            return {
-                success: false,
-                error: error.flatten().fieldErrors,
-                message: "Validation failed, please check your inputs.",
-            };
-        }
+    // if (error instanceof z.ZodError) {
+    //   return {
+    //     success: false,
+    //     errors: error.flatten().fieldErrors,
+    //     message: "Validation failed. Please check the form.",
+    //   };
+    // }
 
-        return {
-        success: false,
-        error: error,
-        message: "Failed to submit product."
+    return {
+      success: false,
+      errors: undefined,
+      message: "Failed to submit product",
     };
-    }
-
-    
-
-}
+  }
+};
