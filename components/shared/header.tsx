@@ -1,6 +1,7 @@
 import {
   CompassIcon,
   HomeIcon,
+  LoaderIcon,
   SparkleIcon,
   SparklesIcon,
 } from "lucide-react";
@@ -13,6 +14,7 @@ import {
   Show 
 } from "@clerk/nextjs";
 import CustomUserButton from "./custom-user-button";
+import { Suspense } from "react";
 
 const Logo = () => {
   return (
@@ -51,25 +53,27 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Show when="signed-out">
-              <SignInButton>
-                <Button variant="ghost" className="hover:cursor-pointer">Sign In</Button>
-              </SignInButton>
-              <SignUpButton>
-                <Button className="hover:cursor-pointer">Sign Up</Button>
-              </SignUpButton>
-            </Show>
+            <Suspense fallback={<div><LoaderIcon className="size-4 animate-spin" /></div>}>
+              <Show when="signed-out">
+                <SignInButton>
+                  <Button variant="ghost" className="hover:cursor-pointer">Sign In</Button>
+                </SignInButton>
+                <SignUpButton>
+                  <Button className="hover:cursor-pointer">Sign Up</Button>
+                </SignUpButton>
+              </Show>
 
-            <Show when="signed-in">
-              <Button 
-                render={<Link href="/submit"/>}
-                nativeButton={false}
-              >
-                <SparklesIcon className="size-4" />
-                Submit Project
-              </Button>
-              <CustomUserButton />
-            </Show>
+              <Show when="signed-in">
+                <Button 
+                  render={<Link href="/submit"/>}
+                  nativeButton={false}
+                >
+                  <SparklesIcon className="size-4" />
+                  Submit Project
+                </Button>
+                <CustomUserButton />
+              </Show>
+            </Suspense>
           </div>
         </div>
       </div>
