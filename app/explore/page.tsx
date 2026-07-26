@@ -1,11 +1,11 @@
 "use cache";
 import SectionHeader from "@/components/shared/section-header";
 import ProductExplorer from "@/components/products/product-explorer";
-import { getAllProducts } from "@/lib/products/product-selection";
+import { getAllApprovedProducts } from "@/lib/products/product-selection";
 import { CompassIcon } from "lucide-react";
 
 export default async function ExplorePage() {
-  const products = await getAllProducts();
+  const products = await getAllApprovedProducts();
 
   return (
     <div className="py-20">
