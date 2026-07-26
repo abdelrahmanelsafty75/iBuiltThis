@@ -7,26 +7,25 @@ const RECENTLY_LAUNCHED_DAYS = 7;
 
 // Cached: used for the static featured section and generateStaticParams.
 export async function getFeaturedProducts() {
-  "use cache";
-  return db
-    .select()
-    .from(products)
-    .where(eq(products.status, "approved"))
-    .orderBy(desc(products.voteCount));
+    "use cache";
+  const productsData = await db.select().from(products).where(eq(products.status, "approved")).orderBy(desc(products.voteCount));
+  return productsData ?? [];
 }
 
 // Cached: fetches every product regardless of status (e.g. admin views).
 export async function getAllProducts() {
   "use cache";
-  return db.select().from(products);
+  const   productsData = await db.select().from(products);
+  return productsData ?? [];
 }
 
 // Not cached: fetches all approved products for use in dynamic sections.
 export async function getAllApprovedProducts() {
-  return db
+  const productsData = await db
     .select()
     .from(products)
     .where(eq(products.status, "approved"));
+  return productsData ?? [];
 }
 
 // Dynamic: connection() opts this out of the static shell so the data is
@@ -42,4 +41,14 @@ export async function getRecentlyLaunchedProducts() {
     (product) =>
       product.createdAt && new Date(product.createdAt) >= oneWeekAgo
   );
+}
+
+export async function getProductBySlug(slug: string) {
+  const product = await db
+  .select()
+  .from(products)
+  .where(eq(products.slug, slug))
+  .limit(1);
+ 
+  return product?.[0] ?? null;
 }

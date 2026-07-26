@@ -99,20 +99,14 @@ export const addProductAction = async (prevState: FormState, formData: FormData)
 /*** upvote product action */
 export const upvoteProductAction = async (productId: number) => {
     try {
-      const {userId, orgId} = await auth();
+      const {userId} = await auth();
         if (!userId) {
             return {
                 success: false,
-                message: "you must be signed in to submit a product.",
+                message: "you must be signed in to upvote a product.",
             }
         }
 
-        if (!orgId) {
-             return {
-               success: false,
-               message: "You must be a member of an organization to submit a product",
-            };
-          }
 
         await db.update(products).set({
           voteCount: sql`GREATEST(0, vote_count + 1)`
@@ -137,20 +131,14 @@ export const upvoteProductAction = async (productId: number) => {
 /*** downvote product action */
 export const downvoteProductAction = async (productId: number) => {
   try {
-    const {userId, orgId} = await auth();
+    const {userId} = await auth();
       if (!userId) {
           return {
               success: false,
-              message: "you must be signed in to submit a product.",
+              message: "you must be signed in to downvote a product.",
           }
       }
 
-      if (!orgId) {
-           return {
-             success: false,
-             message: "You must be a member of an organization to submit a product",
-          };
-        }
 
       await db.update(products).set({
         voteCount: sql`GREATEST(0, vote_count - 1)`

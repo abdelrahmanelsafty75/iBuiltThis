@@ -8,12 +8,12 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useOptimistic, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 
-export default function VotingButtons({
+export default function VotingButton({
   hasVoted,
   voteCount: initialVoteCount,
   productId,
 }: {
-  hasVoted: boolean;
+  hasVoted?: boolean;
   voteCount: number;
   productId: number;
 }) {
