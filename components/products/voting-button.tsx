@@ -1,11 +1,11 @@
 "use client";
 import {
-  downvoteProductAction,
+  removeVoteAction,
   upvoteProductAction,
 } from "@/lib/products/product-actions";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useTransition, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function VotingButton({
@@ -17,26 +17,44 @@ export default function VotingButton({
   voteCount: number;
   productId: number;
 }) {
+  // useState is the persistent source of truth on the client side.
+  // It is updated only when the server action confirms success, so the
+  // count sticks on cards (explore/home) where no server re-render pushes
+  // fresh props after a vote.
+  const [persisted, setPersisted] = useState({
+    count: initialVoteCount,
+    voted: hasVoted ?? false,
+  });
 
-    
-  const [optimisticVoteCount, setOptimisticVoteCount] = useOptimistic(
-    initialVoteCount,
-    (currentCount, change: number) => Math.max(0, currentCount + change)
+  // useOptimistic wraps the persisted state for instant visual feedback.
+  // If the action fails, it automatically reverts to `persisted`.
+  const [optimistic, setOptimistic] = useOptimistic(
+    persisted,
+    (state, action: "upvote" | "remove") =>
+      action === "upvote"
+        ? { count: state.count + 1, voted: true }
+        : { count: Math.max(0, state.count - 1), voted: false }
   );
 
   const [isPending, startTransition] = useTransition();
 
-  const handleUpvote = async () => {
+  const handleUpvote = () => {
     startTransition(async () => {
-      setOptimisticVoteCount(1);
-      await upvoteProductAction(productId);
+      setOptimistic("upvote");
+      const result = await upvoteProductAction(productId);
+      if (result.success) {
+        setPersisted((s) => ({ count: s.count + 1, voted: true }));
+      }
     });
   };
 
-  const handleDownvote = async () => {
+  const handleRemoveVote = () => {
     startTransition(async () => {
-      setOptimisticVoteCount(-1);
-      await downvoteProductAction(productId);
+      setOptimistic("remove");
+      const result = await removeVoteAction(productId);
+      if (result.success) {
+        setPersisted((s) => ({ count: Math.max(0, s.count - 1), voted: false }));
+      }
     });
   };
 
@@ -52,27 +70,29 @@ export default function VotingButton({
         onClick={handleUpvote}
         variant="ghost"
         size="icon-sm"
+        disabled={isPending || optimistic.voted}
         className={cn(
-          "h-8 w-8 text-primary ",
-          hasVoted
+          "h-8 w-8 text-primary",
+          optimistic.voted
             ? "bg-primary/10 text-primary hover:bg-primary/20"
             : "hover:bg-primary/10 hover:text-primary"
         )}
-        disabled={isPending}
       >
         <ChevronUpIcon className="size-5" />
       </Button>
       <span className="text-sm font-semibold transition-colors text-foreground">
-        {optimisticVoteCount}
+        {optimistic.count}
       </span>
       <Button
-        onClick={handleDownvote}
+        onClick={handleRemoveVote}
         variant="ghost"
         size="icon-sm"
-        disabled={isPending}
+        disabled={isPending || !optimistic.voted}
         className={cn(
-          "h-8 w-8 text-primary ",
-          hasVoted ? "hover:text-destructive" : "opacity-50 cursor-not-allowed"
+          "h-8 w-8 text-primary",
+          optimistic.voted
+            ? "hover:text-destructive"
+            : "opacity-50 cursor-not-allowed"
         )}
       >
         <ChevronDownIcon className="size-5" />
