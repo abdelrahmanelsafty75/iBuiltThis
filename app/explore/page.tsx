@@ -1,11 +1,19 @@
-"use cache";
+import { auth } from "@clerk/nextjs/server";
 import SectionHeader from "@/components/shared/section-header";
 import ProductExplorer from "@/components/products/product-explorer";
-import { getAllApprovedProducts } from "@/lib/products/product-selection";
+import {
+  getAllApprovedProducts,
+  getUserVotedProductIds,
+} from "@/lib/products/product-selection";
 import { CompassIcon } from "lucide-react";
 
 export default async function ExplorePage() {
-  const products = await getAllApprovedProducts();
+  const { userId } = await auth();
+
+  const [products, votedProductIds] = await Promise.all([
+    getAllApprovedProducts(),
+    userId ? getUserVotedProductIds(userId) : Promise.resolve([]),
+  ]);
 
   return (
     <div className="py-20">
@@ -17,7 +25,7 @@ export default async function ExplorePage() {
             description="Browse and discover amazing projects from our community"
           />
         </div>
-        <ProductExplorer products={products} />
+        <ProductExplorer products={products} votedProductIds={votedProductIds} />
       </div>
     </div>
   );

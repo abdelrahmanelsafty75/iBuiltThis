@@ -8,11 +8,16 @@ import { useMemo, useState } from "react";
 
 export default function ProductExplorer({
   products,
+  votedProductIds = [],
 }: {
   products: ProductType[];
+  votedProductIds?: number[];
 }) {
   const [sortBy, setSortBy] = useState<"trending" | "recent">("trending");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Build O(1) lookup set from the serializable array prop.
+  const votedSet = useMemo(() => new Set(votedProductIds), [votedProductIds]);
 
   const filteredProducts = useMemo(() => {
     // 1. Search Filtering first (O(N))
@@ -78,7 +83,11 @@ export default function ProductExplorer({
 
       <div className="grid-wrapper">
         {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            hasVoted={votedSet.has(product.id)}
+          />
         ))}
       </div>
     </div>

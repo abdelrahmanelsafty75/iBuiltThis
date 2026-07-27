@@ -11,8 +11,13 @@ import { Badge } from "../ui/badge";
 import VotingButton from "./voting-button";
 import { ProductType } from "@/types";
 
-export default function ProductCard({ product }: { product: ProductType  }) {
-  const hasVoted = false;
+export default function ProductCard({
+  product,
+  hasVoted = false,
+}: {
+  product: ProductType;
+  hasVoted?: boolean;
+}) {
   return (
     <Link href={`/products/${product.slug}`}>
       <Card className="group card-hover hover:bg-primary-foreground/1 border-solid border-gray-400 min-h-50">

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
-export default function StatsCard({
+export default function HeroStatItem({
   icon: Icon,
   value,
   label,
