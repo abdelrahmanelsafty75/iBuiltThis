@@ -29,7 +29,7 @@ export default function StatsCard({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map(({ label, count, color }) => (
-        <div className={cn("status-badge-card", color)} key={label}>
+        <div className={cn("status-badge-card hover:border-primary/10 hover:rounded-lg transition-all duration-300", color)} key={label}>
           <p className="text-sm text-muted-foreground mb-1">{label}</p>
           <p className="text-3xl font-bold">{count}</p>
         </div>

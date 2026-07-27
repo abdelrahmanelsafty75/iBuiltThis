@@ -7,7 +7,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { InboxIcon, ShieldIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminPageSkeleton } from "@/components/products/product-skeleton";
 
 async function AdminContent() {
   const { userId } = await auth();
@@ -68,7 +68,7 @@ async function AdminContent() {
           <h2 className="text-2xl font-bold">All Products</h2>
         </div>
         <div className="space-y-4">
-          {approvedProducts.map((product) => (
+          {allProducts.map((product) => (
             <AdminProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -77,22 +77,6 @@ async function AdminContent() {
   );
 }
 
-function AdminPageSkeleton() {
-  return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-lg" />
-        ))}
-      </div>
-      <div className="my-12 space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-40 rounded-lg" />
-        ))}
-      </div>
-    </>
-  );
-}
 
 export default function AdminPage() {
   return (

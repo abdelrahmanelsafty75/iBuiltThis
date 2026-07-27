@@ -11,7 +11,6 @@ import { revalidatePath } from "next/cache";
 
 
 export const addProductAction = async (prevState: FormState, formData: FormData) => {
-    console.log(formData);
 
     try {
         const {userId, orgId} = await auth();
@@ -19,6 +18,7 @@ export const addProductAction = async (prevState: FormState, formData: FormData)
             return {
                 success: false,
                 message: "you must be signed in to submit a product.",
+                errors: undefined,
             }
         }
 
@@ -26,7 +26,8 @@ export const addProductAction = async (prevState: FormState, formData: FormData)
              return {
                success: false,
                message: "You must be a member of an organization to submit a product",
-            };
+               errors: undefined,
+            }
          }
 
     // Extract form data
@@ -35,8 +36,6 @@ export const addProductAction = async (prevState: FormState, formData: FormData)
     // Validate form data
     const validatedData = productSchema.safeParse(rawFormData);
     if (!validatedData.success) {
-
-        console.log("Validation errors:", validatedData.error.flatten().fieldErrors);
 
         return {
             success: false,
@@ -70,7 +69,7 @@ export const addProductAction = async (prevState: FormState, formData: FormData)
     return {
         success: true,
         message: "Product submitted successfully, it will be reviewed shortly.",
-        errors: {},
+        errors: undefined,
     };
     
 

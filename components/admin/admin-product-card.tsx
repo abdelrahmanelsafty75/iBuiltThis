@@ -1,5 +1,5 @@
 import { ProductType } from "@/types";
-import { Trash2Icon } from "lucide-react";
+import { ArrowRightIcon, Trash2Icon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +28,10 @@ export default function AdminProductCard({ product }: { product: ProductType }) 
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <div className="flex-1 min-w-0 space-y-4">
           <CardTitle className="text-xl font-semibold flex justify-between items-center">
+            <div className="flex items-center gap-2">
+            <ArrowRightIcon className="size-4" />
             {product.name}
+            </div>
             <Badge
               className={cn(
                 product.status === "pending" &&
