@@ -1,5 +1,5 @@
 import AdminProductCard from "@/components/admin/admin-product-card";
-import StatsCard from "@/components/admin/stats-card";
+import AdminStatsGrid from "@/components/admin/stats-card";
 import EmptyState from "@/components/shared/empty-state";
 import SectionHeader from "@/components/shared/section-header";
 import { getAllProducts } from "@/lib/products/product-selection";
@@ -37,7 +37,7 @@ async function AdminContent() {
 
   return (
     <>
-      <StatsCard
+      <AdminStatsGrid
         approved={approvedProducts.length}
         pending={pendingProducts.length}
         rejected={rejectedProducts.length}

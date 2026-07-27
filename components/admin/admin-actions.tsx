@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckCircleIcon, XCircleIcon } from "lucide-react";
+import { useState, useTransition } from "react";
+import { CheckCircleIcon, Loader2Icon, XCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   approveProductAction,
@@ -14,32 +15,56 @@ type AdminActionsProps = {
 };
 
 export default function AdminActions({ status, productId }: AdminActionsProps) {
-  const handleApprove = async () => {
-    await approveProductAction(productId);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleApprove = () => {
+    setError(null);
+    startTransition(async () => {
+      const result = await approveProductAction(productId);
+      if (!result.success) setError(result.message);
+    });
   };
 
-  const handleReject = async () => {
-    await rejectProductAction(productId);
+  const handleReject = () => {
+    setError(null);
+    startTransition(async () => {
+      const result = await rejectProductAction(productId);
+      if (!result.success) setError(result.message);
+    });
   };
 
   return (
     <div className="space-y-2">
+      {error && (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      )}
       {status === "pending" && (
         <div className="flex gap-2">
           <Button
             variant="destructive"
-            className="hover:cursor-pointer"
+            disabled={isPending}
             onClick={handleReject}
           >
-            <XCircleIcon className="size-4" />
+            {isPending ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <XCircleIcon className="size-4" />
+            )}
             Reject
           </Button>
           <Button
             variant="default"
-            className="hover:cursor-pointer"
+            disabled={isPending}
             onClick={handleApprove}
           >
-            <CheckCircleIcon className="size-4" />
+            {isPending ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <CheckCircleIcon className="size-4" />
+            )}
             Approve
           </Button>
         </div>
