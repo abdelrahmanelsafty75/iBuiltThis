@@ -14,6 +14,7 @@ import {
   Show 
 } from "@clerk/nextjs";
 import CustomUserButton from "./custom-user-button";
+import ThemeToggle from "./theme-toggle";
 import { Suspense } from "react";
 
 const Logo = () => {
@@ -57,6 +58,7 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Suspense fallback={<LoaderIcon className="size-4 animate-spin text-muted-foreground" />}>
               <Show when="signed-out">
                 {/* Sign In hidden on xs; Sign Up always visible as primary CTA. */}

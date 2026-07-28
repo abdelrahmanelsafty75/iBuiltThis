@@ -70,7 +70,7 @@ export default function ProductSubmitForm() {
       <FormField
         label="Product Name"
         id="name"
-        placeholder="Enter product name"
+        placeholder="Product Name"
         required
         error={errors.name?.message}
         {...register("name")}
@@ -79,7 +79,7 @@ export default function ProductSubmitForm() {
       <FormField
         label="Slug"
         id="slug"
-        placeholder="Enter slug"
+        placeholder="product-name"
         required
         error={errors.slug?.message}
         helperText="URL-friendly version of your product name"
@@ -110,7 +110,7 @@ export default function ProductSubmitForm() {
         placeholder="https://your-product.com"
         required
         error={errors.websiteUrl?.message}
-        helperText="The URL of your product's website"
+        helperText="Enter your product's website or landing page"
         {...register("websiteUrl")}
       />
 
