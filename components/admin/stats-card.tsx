@@ -13,7 +13,7 @@ type StatItem = {
   color: string;
 };
 
-export default function StatsCard({
+export default function AdminStatsGrid({
   all,
   approved,
   pending,

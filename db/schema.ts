@@ -9,6 +9,7 @@ import {
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // ============= PRODUCTS =============
 export const products = pgTable(
@@ -47,3 +48,35 @@ export const products = pgTable(
     ),
   })
 );
+
+// ============= VOTES =============
+export const votes = pgTable(
+  "votes",
+  {
+    id: serial("id").primaryKey(),
+    userId: varchar("user_id", { length: 255 }).notNull(),
+    productId: integer("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    userProductIdx: uniqueIndex("votes_user_product_idx").on(
+      table.userId,
+      table.productId
+    ),
+    productIdx: index("votes_product_idx").on(table.productId),
+  })
+);
+
+// ============= RELATIONS =============
+export const productsRelations = relations(products, ({ many }) => ({
+  votes: many(votes),
+}));
+
+export const votesRelations = relations(votes, ({ one }) => ({
+  product: one(products, {
+    fields: [votes.productId],
+    references: [products.id],
+  }),
+}));

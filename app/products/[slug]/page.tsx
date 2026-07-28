@@ -1,7 +1,7 @@
-"use cache";
-
+import { Suspense } from "react";
 import SectionHeader from "@/components/shared/section-header";
 import VotingButton from "@/components/products/voting-button";
+import VotingSection from "@/components/products/voting-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,7 +108,20 @@ export default async function ProductPage({
                   <p className="text-sm text-muted-foreground mb-2">
                     Support this product
                   </p>
-                  <VotingButton productId={product.id} voteCount={voteCount} />
+                  {/* VotingSection is an uncached Server Component that streams in
+                      per-request with the real hasVoted state for the current user.
+                      The VotingButton fallback is served from the cached page shell. */}
+                  <Suspense
+                    fallback={
+                      <VotingButton
+                        productId={product.id}
+                        voteCount={voteCount}
+                        hasVoted={false}
+                      />
+                    }
+                  >
+                    <VotingSection productId={product.id} voteCount={voteCount} />
+                  </Suspense>
                 </div>
                 {voteCount > 100 && (
                   <div className="pt-6 border-t">

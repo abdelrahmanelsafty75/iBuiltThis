@@ -1,120 +1,139 @@
 "use client";
 
-import { SparklesIcon } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2Icon, SparklesIcon } from "lucide-react";
 import { FormField } from "../forms/form-field";
 import { Button } from "../ui/button";
 import { addProductAction } from "@/lib/products/product-actions";
-import { useActionState } from "react";
-import { FormState } from "@/types";
+import {
+  productInputSchema,
+  type ProductFormValues,
+} from "@/lib/products/product-validation";
 import { cn } from "@/lib/utils";
 
-
-const initialState: FormState = {
-  success: false,
-  errors: undefined,
-  message: "",
-};
-
 export default function ProductSubmitForm() {
-    const [state, formAction, isPending] = useActionState(addProductAction, initialState);
+  const [isPending, startTransition] = useTransition();
+  const [serverMessage, setServerMessage] = useState<{
+    text: string;
+    success: boolean;
+  } | null>(null);
 
-    const { errors, message, success } = state;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ProductFormValues>({
+    resolver: zodResolver(productInputSchema),
+  });
 
-    const getFieldErrors = (fieldName: string): string[] => {
-      if (!errors) return [];
-      return (errors as Record<string, string[]>)[fieldName] ?? [];
-    };
+  const onSubmit = handleSubmit((data) => {
+    setServerMessage(null);
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("slug", data.slug);
+      formData.append("tagline", data.tagline);
+      if (data.description) formData.append("description", data.description);
+      formData.append("websiteUrl", data.websiteUrl);
+      formData.append("tags", data.tags);
 
-    return (
-    <form className="space-y-6" action={formAction}>
+      const result = await addProductAction(formData);
 
-        {message && (
+      setServerMessage({ text: result.message, success: result.success });
+
+      if (result.success) {
+        reset();
+      }
+    });
+  });
+
+  return (
+    <form className="space-y-6" onSubmit={onSubmit}>
+      {serverMessage && (
         <div
           className={cn(
             "p-4 rounded-lg border",
-            success
+            serverMessage.success
               ? "bg-secondary/10 border-secondary text-secondary"
               : "bg-destructive/10 border-destructive text-destructive"
           )}
           role="alert"
           aria-live="polite"
         >
-          {message}
+          {serverMessage.text}
         </div>
       )}
 
-        <FormField 
+      <FormField
         label="Product Name"
         id="name"
-        name="name"
         placeholder="Enter product name"
         required
-        onChange={() => {}}
-        error={getFieldErrors("name")}  
-        /> 
+        error={errors.name?.message}
+        {...register("name")}
+      />
 
-        <FormField 
+      <FormField
         label="Slug"
         id="slug"
-        name="slug"
         placeholder="Enter slug"
         required
-        onChange={() => {}}
-        error={getFieldErrors("slug")}  
+        error={errors.slug?.message}
         helperText="URL-friendly version of your product name"
-        />
+        {...register("slug")}
+      />
 
-        <FormField 
-        label="TagLine"
+      <FormField
+        label="Tagline"
         id="tagline"
-        name="tagline"
         placeholder="A brief, catchy description"
         required
-        onChange={() => {}}
-        error={getFieldErrors("tagline")}  
-        />
-        <FormField 
+        error={errors.tagline?.message}
+        {...register("tagline")}
+      />
+
+      <FormField
         label="Description"
         id="description"
-        name="description"
         placeholder="Tell us more about your product"
-        required = {false}
-        onChange={() => {}}
-        error={getFieldErrors("description")}  
-        textarea={true}
-        />
-        <FormField 
+        error={errors.description?.message}
+        textarea
+        {...register("description")}
+      />
+
+      <FormField
         label="Website URL"
         id="websiteUrl"
-        name="websiteUrl"
         placeholder="https://your-product.com"
         required
-        onChange={() => {}}
-        error={getFieldErrors("websiteUrl")}  
+        error={errors.websiteUrl?.message}
         helperText="The URL of your product's website"
-        />
-        <FormField 
+        {...register("websiteUrl")}
+      />
+
+      <FormField
         label="Tags"
         id="tags"
-        name="tags"
         placeholder="AI, Productivity, etc."
         required
-        onChange={() => {}}
-        error={getFieldErrors("tags")}  
+        error={errors.tags?.message}
         helperText="Comma-separated tags (e.g., AI, SaaS, Productivity)"
-        />
+        {...register("tags")}
+      />
 
-    <Button type="submit" className="w-full">
-        {isPending ?
-        (
-        <SparklesIcon className="size-4 animate-spin" />
-        ) :(
-            <>
-                <SparklesIcon className="size-4" />
-                Submit Product
-            </>
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? (
+          <Loader2Icon className="size-4 animate-spin" />
+        ) : (
+          <>
+            <SparklesIcon className="size-4" />
+            Submit Product
+          </>
         )}
-        </Button>
-        </form>  
-); 
- }
+      </Button>
+    </form>
+  );
+}

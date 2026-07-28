@@ -1,13 +1,13 @@
 import { ProductType } from "@/types";
-import { ArrowRightIcon, Trash2Icon } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardDescription,
   CardTitle,
 } from "@/components/ui/card";
 import AdminActions from "./admin-actions";
+import AdminDeleteButton from "./admin-delete-button";
 import { cn } from "@/lib/utils";
 
 const DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
@@ -75,12 +75,9 @@ export default function AdminProductCard({ product }: { product: ProductType }) 
             </div>
           </CardDescription>
           <div className="flex justify-between gap-2">
-            <Button variant="outline">
-              <Trash2Icon className="size-4" />
-              Delete
-            </Button> 
+            <AdminDeleteButton productId={product.id} />
             <AdminActions status={product.status ?? ""} productId={product.id} />
-             </div>
+          </div>
         </div>
 
         <div className="lg:shrink-0">

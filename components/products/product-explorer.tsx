@@ -3,16 +3,22 @@ import { ClockIcon, SearchIcon, TrendingUpIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ProductCard from "@/components/products/product-card";
+import EmptyState from "@/components/shared/empty-state";
 import { ProductType } from "@/types";
 import { useMemo, useState } from "react";
 
 export default function ProductExplorer({
   products,
+  votedProductIds = [],
 }: {
   products: ProductType[];
+  votedProductIds?: number[];
 }) {
   const [sortBy, setSortBy] = useState<"trending" | "recent">("trending");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Build O(1) lookup set from the serializable array prop.
+  const votedSet = useMemo(() => new Set(votedProductIds), [votedProductIds]);
 
   const filteredProducts = useMemo(() => {
     // 1. Search Filtering first (O(N))
@@ -29,9 +35,11 @@ export default function ProductExplorer({
       if (sortBy === "trending") {
         return b.voteCount - a.voteCount;
       }
-      
+
       if (sortBy === "recent") {
-        return new Date(b.createdAt || "").getTime() - new Date(a.createdAt || "").getTime();
+        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        return bTime - aTime;
       }
 
       return 0;
@@ -76,11 +84,26 @@ export default function ProductExplorer({
         </p>
       </div>
 
-      <div className="grid-wrapper">
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {filteredProducts.length === 0 ? (
+        <EmptyState
+          message={
+            searchQuery.trim().length > 0
+              ? `No products found for "${searchQuery}"`
+              : "No products available yet"
+          }
+          icon={SearchIcon}
+        />
+      ) : (
+        <div className="grid-wrapper">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              hasVoted={votedSet.has(product.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
