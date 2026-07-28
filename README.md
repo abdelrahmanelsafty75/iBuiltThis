@@ -26,6 +26,10 @@
 
 
 
+https://github.com/user-attachments/assets/da3ee0e6-2b87-4eca-b02c-598472d757c0
+
+
+
 ## Features
 
 - **Product Showcase** — Browse featured and recently-launched products on the landing page with real-time updates via Next.js cache tags.
