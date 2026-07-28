@@ -79,20 +79,22 @@ export async function getRecentlyLaunchedProducts() {
 
 // Cached per slug: tagged with "products" (global) and "product-<id>" (targeted)
 // so both admin approve/reject and per-vote invalidation work precisely.
+// "products" tag is always registered before any await so updateTag() can
+// invalidate even a cached null result (e.g. a slug that later gets approved).
 export async function getProductBySlug(slug: string) {
   "use cache";
   cacheLife("hours");
+  cacheTag("products");
 
   const product = await db
     .select()
     .from(products)
-    .where(eq(products.slug, slug))
+    .where(and(eq(products.slug, slug), eq(products.status, "approved")))
     .limit(1);
 
   const result = product?.[0] ?? null;
 
   if (result) {
-    cacheTag("products");
     cacheTag(`product-${result.id}`);
   }
 

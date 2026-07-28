@@ -6,7 +6,7 @@ import { products, votes } from "@/db/schema";
 import { db } from "@/db";
 import { FormState } from "@/types";
 import { and, eq, sql } from "drizzle-orm";
-import { updateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 const ALREADY_VOTED_MESSAGE = "You have already voted on this product.";
 
@@ -43,7 +43,6 @@ export const addProductAction = async (formData: FormData): Promise<FormState> =
     }
 
     const { name, slug, tagline, description, websiteUrl, tags } = validatedData.data;
-    const tagsArray = tags ? tags.filter((tag) => typeof tag === "string") : [];
 
     const user = await currentUser();
     const emailAddress =
@@ -55,7 +54,7 @@ export const addProductAction = async (formData: FormData): Promise<FormState> =
       tagline,
       description,
       websiteUrl,
-      tags: tagsArray,
+      tags,
       status: "pending",
       submittedBy: emailAddress,
       organizationId: orgId,
@@ -74,10 +73,11 @@ export const addProductAction = async (formData: FormData): Promise<FormState> =
   } catch (error) {
     console.error(error);
 
-    const dbError = (error as { cause?: { code?: string } })?.cause;
-    const isUniqueConstraintViolation = dbError?.code === "23505";
+    const pgCode =
+      (error as { code?: string }).code ??
+      (error as { cause?: { code?: string } }).cause?.code;
 
-    if (isUniqueConstraintViolation) {
+    if (pgCode === "23505") {
       return {
         success: false,
         errors: {
@@ -110,8 +110,8 @@ export const upvoteProductAction = async (productId: number) => {
       // Step 1: Record the vote. The unique index on (userId, productId)
       // guarantees a user can only vote once. A violation rolls back the
       // entire transaction, so the voteCount is never touched.
-      // With drizzle/postgres-js the driver wraps the DB error, so the
-      // postgres error code lives on error.cause.code, not error.code.
+      // Check both error.code and error.cause.code defensively — different
+      // drivers and versions surface the PG error code in different shapes.
       try {
         await tx.insert(votes).values({ userId, productId });
       } catch (error) {
@@ -131,10 +131,13 @@ export const upvoteProductAction = async (productId: number) => {
         .where(eq(products.id, productId));
     });
 
-    // Invalidate both the targeted product entry and all listing caches
-    // (featured, explore, admin) so they show the updated count immediately.
+    // Invalidate the server-side data cache for all product listings and
+    // the specific product entry, then clear the client-side router cache
+    // for every route so navigating to /, /explore, or /products/[slug]
+    // always shows the updated count without a hard refresh.
     updateTag(`product-${productId}`);
     updateTag("products");
+    revalidatePath("/", "layout");
 
     return {
       success: true,
@@ -190,6 +193,7 @@ export const removeVoteAction = async (productId: number) => {
 
     updateTag(`product-${productId}`);
     updateTag("products");
+    revalidatePath("/", "layout");
 
     return {
       success: true,
