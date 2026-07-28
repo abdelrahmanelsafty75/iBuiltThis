@@ -1,27 +1,11 @@
 "use server";
 
-import { auth, clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { products } from "@/db/schema";
 import { ProductType } from "@/types";
 import { eq } from "drizzle-orm";
 import { updateTag } from "next/cache";
-
-async function assertAdmin(): Promise<void> {
-  const { userId } = await auth();
-
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
-  const isAdmin = (user.publicMetadata?.isAdmin as boolean) ?? false;
-
-  if (!isAdmin) {
-    throw new Error("Forbidden");
-  }
-}
+import { assertAdmin } from "@/lib/admin/assert-admin";
 
 export const approveProductAction = async (productId: ProductType["id"]) => {
   try {

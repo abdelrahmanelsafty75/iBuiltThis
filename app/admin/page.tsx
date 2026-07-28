@@ -3,37 +3,25 @@ import AdminStatsGrid from "@/components/admin/stats-card";
 import EmptyState from "@/components/shared/empty-state";
 import SectionHeader from "@/components/shared/section-header";
 import { getAllProducts } from "@/lib/products/product-selection";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { assertAdmin } from "@/lib/admin/assert-admin";
 import { InboxIcon, ShieldIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AdminPageSkeleton } from "@/components/products/product-skeleton";
 
 async function AdminContent() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
-  const isAdmin = (user.publicMetadata?.isAdmin as boolean) ?? false;
-
-  if (!isAdmin) {
-    redirect("/");
+  try {
+    await assertAdmin();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    redirect(message === "Unauthorized" ? "/sign-in" : "/");
   }
 
   const allProducts = await getAllProducts();
-  const approvedProducts = allProducts.filter(
-    (product) => product.status === "approved"
-  );
-  const pendingProducts = allProducts.filter(
-    (product) => product.status === "pending"
-  );
-  const rejectedProducts = allProducts.filter(
-    (product) => product.status === "rejected"
-  );
+  const approvedProducts = allProducts.filter((p) => p.status === "approved");
+  const pendingProducts = allProducts.filter((p) => p.status === "pending");
+  const rejectedProducts = allProducts.filter((p) => p.status === "rejected");
+  const reviewedProducts = allProducts.filter((p) => p.status !== "pending");
 
   return (
     <>
@@ -65,12 +53,18 @@ async function AdminContent() {
 
       <section className="my-12">
         <div className="section-header-with-count">
-          <h2 className="text-2xl font-bold">All Products</h2>
+          <h2 className="text-2xl font-bold">
+            Approved &amp; Rejected ({reviewedProducts.length})
+          </h2>
         </div>
         <div className="space-y-4">
-          {allProducts.map((product) => (
-            <AdminProductCard key={product.id} product={product} />
-          ))}
+          {reviewedProducts.length === 0 ? (
+            <EmptyState message="No reviewed products yet" icon={InboxIcon} />
+          ) : (
+            reviewedProducts.map((product) => (
+              <AdminProductCard key={product.id} product={product} />
+            ))
+          )}
         </div>
       </section>
     </>
