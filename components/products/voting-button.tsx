@@ -5,31 +5,24 @@ import {
 } from "@/lib/products/product-actions";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { useOptimistic, useTransition, useState } from "react";
+import { useOptimistic, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function VotingButton({
   hasVoted,
-  voteCount: initialVoteCount,
+  voteCount,
   productId,
 }: {
   hasVoted?: boolean;
   voteCount: number;
   productId: number;
 }) {
-  // useState is the persistent source of truth on the client side.
-  // It is updated only when the server action confirms success, so the
-  // count sticks on cards (explore/home) where no server re-render pushes
-  // fresh props after a vote.
-  const [persisted, setPersisted] = useState({
-    count: initialVoteCount,
-    voted: hasVoted ?? false,
-  });
-
-  // useOptimistic wraps the persisted state for instant visual feedback.
-  // If the action fails, it automatically reverts to `persisted`.
+  // Props are the single source of truth. After a server action the RSC
+  // re-renders and pushes the authoritative DB values back as fresh props.
+  // useOptimistic applies an instant local delta while the transition is
+  // pending; it automatically reverts to the (now-fresh) props when done.
   const [optimistic, setOptimistic] = useOptimistic(
-    persisted,
+    { count: voteCount, voted: hasVoted ?? false },
     (state, action: "upvote" | "remove") =>
       action === "upvote"
         ? { count: state.count + 1, voted: true }
@@ -41,20 +34,14 @@ export default function VotingButton({
   const handleUpvote = () => {
     startTransition(async () => {
       setOptimistic("upvote");
-      const result = await upvoteProductAction(productId);
-      if (result.success) {
-        setPersisted((s) => ({ count: s.count + 1, voted: true }));
-      }
+      await upvoteProductAction(productId);
     });
   };
 
   const handleRemoveVote = () => {
     startTransition(async () => {
       setOptimistic("remove");
-      const result = await removeVoteAction(productId);
-      if (result.success) {
-        setPersisted((s) => ({ count: Math.max(0, s.count - 1), voted: false }));
-      }
+      await removeVoteAction(productId);
     });
   };
 

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SparklesIcon } from "lucide-react";
+import { Loader2Icon, SparklesIcon } from "lucide-react";
 import { FormField } from "../forms/form-field";
 import { Button } from "../ui/button";
 import { addProductAction } from "@/lib/products/product-actions";
@@ -126,7 +126,7 @@ export default function ProductSubmitForm() {
 
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? (
-          <SparklesIcon className="size-4 animate-spin" />
+          <Loader2Icon className="size-4 animate-spin" />
         ) : (
           <>
             <SparklesIcon className="size-4" />
