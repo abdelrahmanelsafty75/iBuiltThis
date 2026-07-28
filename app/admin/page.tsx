@@ -8,13 +8,14 @@ import { InboxIcon, ShieldIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AdminPageSkeleton } from "@/components/products/product-skeleton";
+import { notFound } from "next/navigation";
 
 async function AdminContent() {
   try {
     await assertAdmin();
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
-    redirect(message === "Unauthorized" ? "/sign-in" : "/");
+    redirect(message === "Unauthorized" ? notFound() : "/");
   }
 
   const allProducts = await getAllProducts();

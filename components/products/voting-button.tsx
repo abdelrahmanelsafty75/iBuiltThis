@@ -4,9 +4,10 @@ import {
   upvoteProductAction,
 } from "@/lib/products/product-actions";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { useOptimistic, useTransition } from "react";
+import { ChevronDownIcon, ChevronUpIcon, LogInIcon } from "lucide-react";
+import { useOptimistic, useTransition, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth, SignInButton } from "@clerk/nextjs";
 
 export default function VotingButton({
   hasVoted,
@@ -17,6 +18,16 @@ export default function VotingButton({
   voteCount: number;
   productId: number;
 }) {
+  const { userId } = useAuth();
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+
+  // Auto-dismiss the sign-in prompt after 3 seconds.
+  useEffect(() => {
+    if (!showSignInPrompt) return;
+    const timer = setTimeout(() => setShowSignInPrompt(false), 3000);
+    return () => clearTimeout(timer);
+  }, [showSignInPrompt]);
+
   // Props are the single source of truth. After a server action the RSC
   // re-renders and pushes the authoritative DB values back as fresh props.
   // useOptimistic applies an instant local delta while the transition is
@@ -32,6 +43,10 @@ export default function VotingButton({
   const [isPending, startTransition] = useTransition();
 
   const handleUpvote = () => {
+    if (!userId) {
+      setShowSignInPrompt(true);
+      return;
+    }
     startTransition(async () => {
       setOptimistic("upvote");
       await upvoteProductAction(productId);
@@ -84,6 +99,15 @@ export default function VotingButton({
       >
         <ChevronDownIcon className="size-5" />
       </Button>
+
+      {showSignInPrompt && (
+        <SignInButton mode="modal">
+          <button className="flex items-center gap-1 text-xs text-secondary font-bold underline underline-offset-2 mt-1 hover:text-secondary/80 transition-colors">
+            <LogInIcon className="size-3" />
+            Sign in to vote
+          </button>
+        </SignInButton>
+      )}
     </div>
   );
 }
